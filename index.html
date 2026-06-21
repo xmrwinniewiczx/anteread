@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ante-read Book Club</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Ante-read Book Club</h1>
+    </header>
+
+    <main class="container">
+        <section class="current-book-section">
+            <h2>Current Selection</h2>
+            <div class="current-book-card" id="current-book">
+                <div class="loading">Loading current book...</div>
+            </div>
+        </section>
+
+        <section class="voting-section">
+            <h2>Vote for Next Month's Book</h2>
+            <p class="subtitle">Select your favorite choice. Results are kept secret until the reveal!</p>
+            
+            <form id="vote-form">
+                <div class="voting-grid">
+                    <label class="vote-card">
+                        <input type="radio" name="book-vote" value="book1" required>
+                        <div class="card-content">
+                            <span class="book-title">Project Hail Mary</span>
+                            <span class="book-author">Andy Weir</span>
+                        </div>
+                    </label>
+
+                    <label class="vote-card">
+                        <input type="radio" name="book-vote" value="book2">
+                        <div class="card-content">
+                            <span class="book-title">Dune</span>
+                            <span class="book-author">Frank Herbert</span>
+                        </div>
+                    </label>
+
+                    <label class="vote-card">
+                        <input type="radio" name="book-vote" value="book3">
+                        <div class="card-content">
+                            <span class="book-title">Tomorrow, and Tomorrow, and Tomorrow</span>
+                            <span class="book-author">Gabrielle Zevin</span>
+                        </div>
+                    </label>
+
+                    <label class="vote-card">
+                        <input type="radio" name="book-vote" value="book4">
+                        <div class="card-content">
+                            <span class="book-title">The Silent Patient</span>
+                            <span class="book-author">Alex Michaelides</span>
+                        </div>
+                    </label>
+                </div>
+                <button type="submit" class="btn-submit">Cast Secret Vote</button>
+            </form>
+        </section>
+
+        <section class="history-section">
+            <h2>Past Reads</h2>
+            <div class="history-grid" id="past-books">
+                </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html> 
