@@ -3,26 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ante-read Book Club</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Anti Read Book Club</title>
+    <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 
-    <header>
-        <h1>Ante-read Book Club</h1>
+    <header class="main-header">
+        <div class="header-inner">
+            <h1 class="header-heading">
+                <span class="color-one">ANTI READ</span> <span class="color-two">BOOK CLUB</span>
+            </h1>
+        </div>
     </header>
 
-    <main class="container">
+    <main class="content-wrapper">
         <section class="current-book-section">
-            <h2>Current Selection</h2>
-            <div class="current-book-card" id="current-book">
-                <div class="loading">Loading current book...</div>
+            <div class="section-meta"><span>00 / NOW READING</span><span>CURRENT SELECTION</span></div>
+            <h2 class="brutalist-heading">THIS MONTH'S BOOK.</h2>
+            <div id="current-book">
+                <div class="loading">LOADING CURRENT SELECTION...</div>
             </div>
         </section>
-
+        
         <section class="voting-section">
-            <h2>Vote for Next Month's Book</h2>
-            <p class="subtitle">Select your favorite choice. Results are kept secret until the reveal!</p>
+            <div class="section-meta"><span>01 / VOTE</span><span>NEXT MONTH</span></div>
+            <h2 class="brutalist-heading">SELECT CHOICE.</h2>
             
             <form id="vote-form">
                 <div class="voting-grid">
@@ -45,7 +50,7 @@
                     <label class="vote-card">
                         <input type="radio" name="book-vote" value="book3">
                         <div class="card-content">
-                            <span class="book-title">Tomorrow, and Tomorrow, and Tomorrow</span>
+                            <span class="book-title">Tomorrow, and Tomorrow</span>
                             <span class="book-author">Gabrielle Zevin</span>
                         </div>
                     </label>
@@ -58,17 +63,39 @@
                         </div>
                     </label>
                 </div>
-                <button type="submit" class="btn-submit">Cast Secret Vote</button>
+                <button type="submit" class="btn-submit">SUBMIT SECRET VOTE</button>
+            </form>
+        </section>
+
+        <section class="suggestion-section">
+            <div class="section-meta"><span>02 / SUGGEST</span><span>FUTURE READS</span></div>
+            <h2 class="brutalist-heading">MAKE A SUGGESTION.</h2>
+            
+            <form id="suggestion-form" class="suggestion-form">
+                <div class="suggestion-form-grid">
+                    <div class="input-group">
+                        <label for="suggest-title">BOOK TITLE</label>
+                        <input type="text" id="suggest-title" name="suggest-title" placeholder="e.g., Neuromancer" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="suggest-author">AUTHOR</label>
+                        <input type="text" id="suggest-author" name="suggest-author" placeholder="e.g., William Gibson" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">SUBMIT SUGGESTION</button>
+                </div>
             </form>
         </section>
 
         <section class="history-section">
-            <h2>Past Reads</h2>
-            <div class="history-grid" id="past-books">
-                </div>
+            <div class="section-meta"><span>03 / ARCHIVE</span><span>PAST READS</span></div>
+            <h2 class="brutalist-heading">PREVIOUSLY READ.</h2>
+            <div class="history-grid" id="past-books"></div>
         </section>
     </main>
 
-    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js?v=1"></script>
 </body>
-</html> 
+</html>
