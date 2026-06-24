@@ -1,443 +1,289 @@
-@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght=800;900&family=Syne:wght=800&family=Inter:wght=400;600&display=swap');
+// CONFIGURATION: Verified API and Database Connection Keys
+const API_KEY = "AIzaSyBWrMes6QzI2jXGppZDhpNP8W1u-CrqJ2Y"; 
+const SUPABASE_URL = "https://dupirmedtmtrodwypkel.supabase.co"; 
 
-:root {
-    --bg-color: #faf9f6;          
-    --text-color: #0b0c10;        
-    --accent-color: #faad17;      
-    --border-color: #0b0c10;
-    --font-display: 'Unbounded', sans-serif; 
-    --font-heading: 'Syne', sans-serif;
-    --font-body: 'Inter', sans-serif;
+// Paste your fresh key from the dashboard once right here inside these quotes:
+const RAW_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1cGlybWVkdG10cm9kd3lwa2VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNDg4NTMsImV4cCI6MjA5NzYyNDg1M30.zDyFOtKYSV9V8QN6z1H_VUc0oYmGexZKoNibXe9VzQ0";
+
+// Automatically cleans any accidental spaces or hidden line breaks from copy-pasting
+const SUPABASE_ANON_KEY = RAW_ANON_KEY.replace(/\s/g, '').trim();
+
+// The master data structures for your book club content
+const CURRENT_BOOK = { title: "Blood Meridian", author: "Cormac Mccarthy" };
+
+const PAST_BOOKS = [
+    { title: "Blood Meridian", author: "Cormac Mccarthy" },
+];
+
+// LOOK HERE: Replace the placeholder text inside the quotes below whenever you want!
+const VOTE_OPTIONS = [
+    { 
+        id: "choice1", 
+        title: "The Metamorphosis", 
+        author: "Franz Kafka, Stanley Corngold",
+        description: "Gregor Samsa, a hardworking traveling salesman and the sole provider for his family, wakes up one morning to find he has been transformed into a giant, insect-like creature. Forced into isolation inside his bedroom, Gregor must navigate his bizarre new body while his family struggles to cope with the sudden loss of their breadwinner. As the household dynamics shift from shock to resentment, Gregor is left to face the deep ache of alienation right in his own home."    },
+    { 
+        id: "choice2", 
+        title: "Fahrenheit 451", 
+        author: "Ray Bradbury, Giorgio Monicelli",
+        description: "In Ray Bradburys chilling dystopian classic, Fahrenheit 451, books are strictly forbidden by law. Montag’s sole duty is to hunt down illegal personal libraries and burn them, along with the houses that hide them. In a world obsessed with mindless entertainment, fast cars, and superficial happiness, nobody stops to ask why. Montag never did either—until a chance encounter with an eccentric young neighbor changes everything."},
+    { 
+        id: "choice3", 
+        title: "The Alchemist A Fable about Following Your Dream", 
+        author: "Paulo Coelho",
+        description: "A young Andalusian shepherd boy named Santiago yearns to travel the world in search of a worldly treasure. His quest leads him from his homeland in Spain into the vast, unforgiving markets of Tangier and across the Egyptian desert. Along the way, Santiago's simple search for riches transforms into a profound journey of self-discovery. Guided by a series of mysterious mentors—including a powerful alchemist—he learns to listen to his heart, read the omens scattered across his path, and understand the Language of the World." },
+    { 
+        id: "choice4", 
+        title: "The Stepford Wives", 
+        author: "Ira Levin",
+        description: "Joanna Eberhart, an independent photographer, moves with her family to an idyllic Connecticut suburb. At first, it seems like a dream escape. But Joanna soon notices something deeply unsettling: the local women are all impossibly submissive, completely obsessed with housework, and entirely devoid of personal ambition. When her few free-thinking friends suddenly undergo the same eerie transformation, Joanna’s curiosity spirals into paranoia. She realizes she must uncover the dark secret behind this flawless community before she loses her own identity." }
+];
+
+const ARCHIVE_MONTHS = ["June 2026",];
+
+// --- PRIORITY 1: LOAD ALL COVERS & RENDER INTERFACE ---
+document.addEventListener("DOMContentLoaded", () => {
+    fetchCurrentSelection();
+    fetchPastArchive();
+    fetchVotingOptions(); 
+    disableFormAutocompletes(); 
+    setupVotingForm();
+    setupSuggestionForm();
+});
+
+function disableFormAutocompletes() {
+    const inputs = document.querySelectorAll('#suggestion-form input, #vote-form input');
+    inputs.forEach(input => {
+        input.setAttribute('autocomplete', 'off');
+    });
 }
 
-* {
-    box-sizing: border-box;
-}
+async function fetchCurrentSelection() {
+    const container = document.getElementById("current-book");
+    if (!container) return;
 
-body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: var(--font-body);
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    
-    /* Massive Yellow Pillars on the Sides */
-    border-left: 48px solid var(--accent-color);
-    border-right: 48px solid var(--accent-color);
-}
-
-/* Static Header Spacing */
-.main-header {
-    width: 100%;
-    background-color: var(--bg-color);
-    padding: 5rem 2rem 0rem 2rem; 
-}
-
-.header-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    text-align: center; 
-    border-bottom: none; 
-}
-
-/* Optimized centered layout style */
-.header-heading {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    margin: 0;
-    padding: 0;
-    font-size: 6.2rem; 
-    line-height: 1;  
-    letter-spacing: -0.04em;
-    white-space: nowrap;
-    display: inline-block;
-}
-
-.color-one { color: var(--text-color); }
-.color-two { color: var(--accent-color); }
-
-/* Main Content Layout Grid */
-.content-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 4rem 2rem 6rem 2rem;
-}
-
-section {
-    margin-bottom: 7rem;
-}
-
-/* Section Separator Meta Lines */
-.section-meta {
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--font-display);
-    font-size: 0.75rem;
-    font-weight: 800;
-    border-bottom: 2px solid var(--border-color);
-    padding-bottom: 0.5rem;
-    margin-bottom: 3rem;
-    color: var(--text-color);
-}
-
-.brutalist-heading {
-    font-family: var(--font-heading);
-    font-weight: 800;
-    font-size: 3.5rem;
-    text-transform: uppercase;
-    margin-top: 0;
-    margin-bottom: 3rem;
-    letter-spacing: -0.03em;
-}
-
-/* Currently Reading Card Frame */
-.current-book-layout {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 600px;
-    width: 100%;
-    text-align: center;
-    padding: 4rem 2rem; 
-    background: var(--bg-color);
-    border: 3px solid var(--border-color);
-    box-shadow: 20px 20px 0px var(--text-color);
-    margin: 0 auto;
-}
-
-.current-book-layout img {
-    width: 75%;
-    max-width: 280px;
-    height: auto;
-    object-fit: cover;
-    border: 2px solid var(--border-color);
-    margin-bottom: 2.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-}
-
-.current-title {
-    font-family: var(--font-heading);
-    font-weight: 800;
-    font-size: 2.5rem;
-    text-transform: uppercase;
-    line-height: 1.1;
-    margin: 0 0 0.5rem 0;
-}
-
-.current-author {
-    font-family: var(--font-body);
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin: 0;
-}
-
-/* --- 3D FLIPPING VOTING TILES --- */
-#voting-options-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 30px; 
-    margin-bottom: 4rem;
-    padding: 10px 0;
-}
-
-/* The outer frame sets up the 3D space perspective */
-.vote-option-tile {
-    perspective: 1000px;
-    cursor: pointer;
-    width: 100%;
-    max-width: 280px;
-    height: 460px; /* Uniform grid card height */
-    margin: 0 auto;
-    display: block;
-    position: relative;
-}
-
-/* Top Right checkbox configuration placement */
-.vote-option-tile input[type="checkbox"] {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    accent-color: var(--text-color);
-    transform: scale(1.4);
-    z-index: 20; 
-    margin: 0;
-}
-
-/* The core canvas container element that rotates */
-.tile-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-style: preserve-3d;
-}
-
-/* 1. DESKTOP HOVER ROUTE: Spins strictly on mouse presence IF NOT checked */
-@media (hover: hover) {
-    .vote-option-tile:not(:has(input[type="checkbox"]:checked)):hover .tile-card-inner {
-        transform: rotateY(180deg);
+    try {
+        const searchString = `intitle:${CURRENT_BOOK.title}+inauthor:${CURRENT_BOOK.author}`;
+        const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchString)}&country=US&key=${API_KEY}`);
+        const data = await response.json();
+        
+        if (data.items && data.items.length > 0) {
+            const book = data.items[0].volumeInfo;
+            let thumbnail = book.imageLinks?.thumbnail || book.imageLinks?.smallThumbnail;
+            if (thumbnail && thumbnail.startsWith('http://')) {
+                thumbnail = thumbnail.replace('http://', 'https://');
+            }
+            
+            container.innerHTML = `
+                <div class="current-book-layout">
+                    <img src="${thumbnail}" alt="${book.title} Cover">
+                    <h3 class="current-title">${book.title}</h3>
+                    <p class="current-author">${book.authors?.join(', ')}</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error("Error loading current book:", error);
     }
 }
 
-/* 2. MOBILE TAP CLASS ROUTE: Spins when class is added via touch click interaction */
-.vote-option-tile.reveal-back:not(:has(input[type="checkbox"]:checked)) .tile-card-inner {
-    transform: rotateY(180deg);
-}
+async function fetchPastArchive() {
+    const grid = document.getElementById("past-books");
+    if (!grid) return;
+    grid.innerHTML = '';
 
-/* Face Shared Settings (Front and Back layout parameters) */
-.tile-front, .tile-back {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden; 
-    border: 3px solid var(--border-color);
-    padding: 3.5rem 1.5rem 1.5rem 1.5rem; 
-    display: flex;
-    flex-direction: column;
-    background: var(--bg-color);
-    transition: background-color 0.2s ease;
-    box-sizing: border-box; 
-}
+    try {
+        const requests = PAST_BOOKS.map(book => {
+            const searchString = `intitle:${book.title}+inauthor:${book.author}`;
+            return fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchString)}&country=US&key=${API_KEY}`).then(res => res.json());
+        });
+        
+        const results = await Promise.all(requests);
 
-/* FRONT CARD STYLING */
-.tile-front {
-    z-index: 2;
-    transform: rotateY(0deg);
-}
-
-.vote-cover {
-    width: 100%;
-    height: 260px; 
-    object-fit: cover;
-    border: 2px solid var(--border-color);
-    margin-bottom: 1.25rem;
-    display: block;
-}
-
-.vote-details {
-    margin-top: auto;
-}
-
-.vote-title {
-    display: block;
-    font-family: var(--font-heading);
-    font-weight: 800;
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    line-height: 1.2;
-    margin-bottom: 0.25rem;
-    color: var(--text-color);
-}
-
-.vote-author {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    color: rgba(11, 12, 16, 0.7);
-    font-family: var(--font-body);
-}
-
-/* BACK CARD STYLING */
-.tile-back {
-    transform: rotateY(180deg); 
-    text-align: left;
-    justify-content: flex-start;
-    overflow-y: auto; /* Clean scrolling context for large word blocks */
-}
-
-.back-heading {
-    font-family: var(--font-display);
-    font-size: 0.8rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    border-bottom: 2px solid var(--border-color);
-    padding-bottom: 0.25rem;
-    margin-bottom: 1rem;
-    letter-spacing: 0.05em;
-    display: block;
-}
-
-.vote-description {
-    font-family: var(--font-body);
-    font-size: 0.85rem;
-    line-height: 1.5;
-    margin: 0;
-    color: var(--text-color);
-}
-
-/* HOVER & SELECTION SYSTEM COLOR STATES */
-.vote-option-tile:hover .tile-back {
-    background-color: var(--accent-color);
-}
-
-.vote-option-tile:has(input[type="checkbox"]:checked) .tile-front,
-.vote-option-tile:has(input[type="checkbox"]:checked) .tile-back {
-    background-color: var(--accent-color);
-}
-
-/* Suggestions Form Card Container */
-.suggestion-form {
-    max-width: 800px;
-    margin: 0 auto 4rem auto;
-    background: #ffffff;
-    border: 3px solid var(--border-color);
-    box-shadow: 12px 12px 0px var(--text-color);
-    padding: 3.5rem 3rem;
-}
-
-.suggestion-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5rem;
-    margin-bottom: 3rem;
-}
-
-.input-group {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-
-.input-group label {
-    font-family: var(--font-display);
-    font-size: 0.8rem;
-    font-weight: 900;
-    margin-bottom: 0.75rem;
-    letter-spacing: 0.05em;
-    color: var(--text-color);
-}
-
-/* Inline single baseline input style */
-.input-group input {
-    width: 100%;
-    padding: 1rem 0;
-    font-family: var(--font-body);
-    font-size: 1.1rem;
-    background: transparent;
-    border: none;
-    border-bottom: 3px solid var(--border-color);
-    color: var(--text-color);
-    font-weight: 600;
-    outline: none;
-    border-radius: 0;
-    transition: all 0.25s ease;
-}
-
-.input-group input::placeholder {
-    color: rgba(11, 12, 16, 0.3);
-    font-weight: 400;
-}
-
-.input-group input:focus {
-    border-bottom-color: var(--accent-color);
-    padding-left: 0.5rem; 
-}
-
-.form-actions {
-    text-align: center;
-    width: 100%;
-}
-
-/* Shared Centered Brutalist Submit Buttons */
-.btn-submit {
-    display: block; 
-    width: 100%;
-    max-width: 320px;
-    margin: 0 auto; 
-    background-color: var(--text-color);
-    color: var(--bg-color);
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 0.95rem;
-    padding: 1.25rem;
-    border: 3px solid var(--text-color);
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.btn-submit:hover {
-    background-color: var(--accent-color);
-    color: var(--text-color);
-    box-shadow: 6px 6px 0px var(--text-color);
-    transform: translate(-3px, -3px);
-}
-
-/* Past Reads Shelving Rows */
-.history-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 4rem 2rem;
-}
-
-.past-book-card {
-    display: flex;
-    flex-direction: column;
-}
-
-.past-book-card img {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 2/3;
-    object-fit: cover;
-    border: 2px solid var(--border-color);
-    margin-bottom: 1.25rem;
-}
-
-.past-book-card .book-title {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 1.15rem;
-    text-transform: uppercase;
-    line-height: 1.2;
-    margin-bottom: 0.25rem;
-}
-
-.past-book-card .book-author {
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    color: rgba(11, 12, 16, 0.7);
-    margin-bottom: 0.75rem;
-}
-
-.past-month {
-    font-family: var(--font-display);
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    opacity: 0.5;
-}
-
-/* Media Queries for Mobile Responsiveness */
-@media (max-width: 768px) {
-    body {
-        border-left-width: 16px;
-        border-right-width: 16px;
-    }
-    .main-header { padding: 3rem 1rem 0rem 1rem; }
-    .content-wrapper { padding: 2rem 1rem; }
-    
-    .header-heading { 
-        font-size: 2.5rem; 
-        white-space: normal; 
-    }
-    .suggestion-form {
-        padding: 2.5rem 1.5rem;
-        box-shadow: 8px 8px 0px var(--text-color);
-    }
-    .suggestion-form-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-    .btn-submit {
-        max-width: 100%;
+        results.forEach((data, index) => {
+            if (data.items && data.items.length > 0) {
+                const book = data.items[0].volumeInfo;
+                let thumbnail = book.imageLinks?.thumbnail || book.imageLinks?.smallThumbnail;
+                if (thumbnail && thumbnail.startsWith('http://')) {
+                    thumbnail = thumbnail.replace('http://', 'https://');
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'past-book-card';
+                card.innerHTML = `
+                    <img src="${thumbnail}" alt="${book.title} Cover">
+                    <span class="past-month">${ARCHIVE_MONTHS[index]}</span>
+                    <span class="book-title">${book.title}</span>
+                    <span class="book-author">${book.authors?.join(', ')}</span>
+                `;
+                grid.appendChild(card);
+            }
+        });
+    } catch (error) {
+        console.error("Error loading archive:", error);
     }
 }
 
-@media (max-width: 480px) {
-    .header-heading { font-size: 2rem; }
+async function fetchVotingOptions() {
+    const optionsContainer = document.getElementById("voting-options-container");
+    if (!optionsContainer) return;
+    optionsContainer.innerHTML = ''; 
+
+    try {
+        const requests = VOTE_OPTIONS.map(book => {
+            const searchString = `intitle:${book.title}+inauthor:${book.author}`;
+            return fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchString)}&country=US&key=${API_KEY}`).then(res => res.json());
+        });
+
+        const results = await Promise.all(requests);
+
+        results.forEach((data, index) => {
+            const staticData = VOTE_OPTIONS[index];
+            let thumbnail = "";
+            let finalTitle = staticData.title;
+            let finalAuthor = staticData.author;
+
+            if (data.items && data.items.length > 0) {
+                const apiBook = data.items[0].volumeInfo;
+                thumbnail = apiBook.imageLinks?.thumbnail || apiBook.imageLinks?.smallThumbnail || "";
+                if (thumbnail && thumbnail.startsWith('http://')) {
+                    thumbnail = thumbnail.replace('http://', 'https://');
+                }
+                finalTitle = apiBook.title;
+                finalAuthor = apiBook.authors?.join(', ') || staticData.author;
+            }
+
+            const tile = document.createElement('div'); 
+            tile.className = 'vote-option-tile';
+            tile.innerHTML = `
+                <input type="checkbox" name="book-vote" value="${finalTitle} by ${finalAuthor}">
+                <div class="tile-card-inner">
+                    <div class="tile-front">
+                        ${thumbnail ? `<img src="${thumbnail}" class="vote-cover" alt="${finalTitle} Cover">` : '<div class="no-cover" style="height:260px; border:2px dashed #000; margin-bottom:1.25rem;"></div>'}
+                        <div class="vote-details">
+                            <span class="vote-title">${finalTitle}</span>
+                            <span class="vote-author">${finalAuthor}</span>
+                        </div>
+                    </div>
+                    <div class="tile-back">
+                        <span class="back-heading">Description</span>
+                        <p class="vote-description">${staticData.description}</p>
+                    </div>
+                </div>
+            `;
+
+            const checkbox = tile.querySelector('input[type="checkbox"]');
+
+            tile.addEventListener('click', (e) => {
+                if (e.target === checkbox) return;
+                if (checkbox.checked) return;
+                tile.classList.toggle('reveal-back');
+            });
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    tile.classList.remove('reveal-back');
+                }
+            });
+
+            optionsContainer.appendChild(tile);
+        });
+
+        setupMaxVotesGuard();
+
+    } catch (error) {
+        console.error("Error loading voting options:", error);
+    }
+}
+
+function setupMaxVotesGuard() {
+    const container = document.getElementById("voting-options-container");
+    if (!container) return;
+
+    container.addEventListener("change", (event) => {
+        const checkedBoxes = container.querySelectorAll('input[name="book-vote"]:checked');
+        
+        if (checkedBoxes.length > 2) {
+            alert("You can only select up to 2 books for your vote!");
+            event.target.checked = false; 
+        }
+    });
+}
+
+// --- PRIORITY 2: DATABASE SETUP ---
+function getSupabaseClient() {
+    if (window.supabase) {
+        return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    return null;
+}
+
+function setupVotingForm() {
+    const form = document.getElementById("vote-form");
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const client = getSupabaseClient();
+        
+        if (!client) {
+            alert("VOTE ERROR:\nSupabase database client script did not load.");
+            return;
+        }
+
+        const selectedVotes = form.querySelectorAll('input[name="book-vote"]:checked');
+        
+        if (selectedVotes.length === 0) {
+            alert("Please select at least one book choice before submitting!");
+            return;
+        }
+
+        const insertPromises = Array.from(selectedVotes).map(checkbox => {
+            const choiceText = checkbox.value;
+            return client.from('Votes').insert([{ choice_id: choiceText }]);
+        });
+
+        try {
+            const responses = await Promise.all(insertPromises);
+            const databaseError = responses.find(res => res.error);
+            
+            if (databaseError) {
+                alert(`VOTE ERROR FROM SERVER:\nMessage: ${databaseError.error.message}`);
+                console.error("Supabase Error Status:", databaseError.error);
+            } else {
+                alert("VOTES SUCCESSFULLY SUBMITTED!");
+                selectedVotes.forEach(cb => cb.checked = false);
+            }
+        } catch (err) {
+            console.error("Execution error during submission processing:", err);
+        }
+    });
+}
+
+function setupSuggestionForm() {
+    const form = document.getElementById("suggestion-form");
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const client = getSupabaseClient();
+        
+        if (!client) {
+            alert("SUGGESTION ERROR:\nSupabase database client script did not load.");
+            return;
+        }
+        
+        const title = document.getElementById("suggest-title").value.trim();
+        const author = document.getElementById("suggest-author").value.trim();
+        
+        const { error } = await client.from('Suggestions').insert([{ title: title, author: author }]);
+        
+        if (error) {
+            alert(`SUGGESTION ERROR FROM SERVER:\nMessage: ${error.message}\nDetails: ${error.details}\nHint: ${error.hint}`);
+            console.error("Full Supabase Error Status:", error);
+        } else {
+            alert("SUGGESTION RECEIVED!");
+            form.reset();
+        }
+    });
 }
