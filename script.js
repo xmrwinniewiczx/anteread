@@ -9,7 +9,7 @@ const RAW_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const SUPABASE_ANON_KEY = RAW_ANON_KEY.replace(/\s/g, '').trim();
 
 // The master data structures for your book club content
-const CURRENT_BOOK = { title: "Blood Meridian", author: "Cormac Mccarthy" };
+const CURRENT_BOOK = { title: "Fahrenheit 451", author: "Ray Bradbury, Giorgio Monicelli" };
 
 const PAST_BOOKS = [
     { title: "Blood Meridian", author: "Cormac Mccarthy" },
